@@ -1,0 +1,17 @@
+{
+  "name": "ai-developed-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "private": true,
+  "dependencies": {
+    "compose": "^0.1.2",
+    "docker": "^1.0.0",
+    "playwright": "^1.58.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.2.3"
+  }
+}

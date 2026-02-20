@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+.playwright/
+
+# Reports
+reports/allure/*
+reports/junit/*
+!reports/**/.gitkeep
+
+# IDE
+.idea/
