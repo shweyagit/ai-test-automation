@@ -11,7 +11,9 @@ jobs:
     steps:
       - name: Ping server
         run: |
-          curl -sf -o /dev/null -w "Status: %{http_code} | Time: %{time_total}s\n" \
-            https://shop-pulse-9.preview.emergentagent.com/api/health \
-            || curl -sf -o /dev/null -w "Status: %{http_code} | Time: %{time_total}s\n" \
-            https://shop-pulse-9.preview.emergentagent.com
+          echo "Pinging server to keep alive..."
+          curl -s -o /dev/null -w "Status: %{http_code} | Time: %{time_total}s\n" \
+            https://shop-pulse-9.preview.emergentagent.com || true
+          sleep 5
+          curl -s -o /dev/null -w "Status: %{http_code} | Time: %{time_total}s\n" \
+            https://shop-pulse-9.preview.emergentagent.com || true
