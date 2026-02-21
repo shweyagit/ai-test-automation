@@ -2,18 +2,48 @@ name: Keep Alive Ping
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Every 5 minutes
+    - cron: '*/14 * * * *' # Every 14 minutes (GitHub's practical minimum)
   workflow_dispatch: # Allow manual trigger
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping server
+      - name: Wake up and keep server alive
         run: |
-          echo "Pinging server to keep alive..."
-          curl -s -o /dev/null -w "Status: %{http_code} | Time: %{time_total}s\n" \
-            https://shop-pulse-9.preview.emergentagent.com || true
-          sleep 5
-          curl -s -o /dev/null -w "Status: %{http_code} | Time: %{time_total}s\n" \
-            https://shop-pulse-9.preview.emergentagent.com || true
+          BASE_URL="https://shop-pulse-9.preview.emergentagent.com"
+
+          echo "=== Keep-Alive Ping ==="
+          echo "Time: $(date -u)"
+
+          # First request may wake the server (cold start can take 30-60s)
+          echo "--- Initial wake-up ping ---"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$BASE_URL" || echo "000")
+          echo "Root: $STATUS"
+
+          # If server was sleeping, wait for it to fully start
+          if [ "$STATUS" != "200" ]; then
+            echo "Server may be waking up, waiting 30s..."
+            sleep 30
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$BASE_URL" || echo "000")
+            echo "Root (retry): $STATUS"
+          fi
+
+          # Hit actual API endpoints to generate real activity
+          echo "--- Hitting API endpoints ---"
+          curl -s -o /dev/null -w "GET /api/products: %{http_code} (%{time_total}s)\n" \
+            --max-time 30 "$BASE_URL/api/products" || true
+
+          sleep 2
+
+          curl -s -o /dev/null -w "GET /api/users: %{http_code} (%{time_total}s)\n" \
+            --max-time 30 "$BASE_URL/api/users" || true
+
+          sleep 2
+
+          # Final check
+          echo "--- Final health check ---"
+          curl -s -o /dev/null -w "Root: %{http_code} (%{time_total}s)\n" \
+            --max-time 30 "$BASE_URL" || true
+
+          echo "=== Done ==="
